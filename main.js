@@ -2,10 +2,12 @@ const form = document.getElementById("form");
 const formTwo = document.getElementById("formTwo");
 const formThree = document.getElementById("formThree");
 const formFour = document.getElementById("formFour");
+const errMsg = document.getElementById("errMsg");
 form.style.display = "block";
 formTwo.style.display = "none";
 formThree.style.display = "none";
 formFour.style.display = "none";
+errMsg.style.display = "none"
 
 form.addEventListener("submit", (e)=> {
     e.preventDefault();
@@ -28,7 +30,7 @@ formTwo.addEventListener("submit", (e)=> {
         if (checked_radio.value === "I don't have one.") {
             console.log(checked_radio.value);
             formTwo.style.display = "none";
-            formFour.style.display = "block";
+            errMsg.style.display = "block";
         } else {
             formTwo.style.display = "none";
             formThree.style.display = "block";
