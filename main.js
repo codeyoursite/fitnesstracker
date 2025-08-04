@@ -57,7 +57,6 @@ formFour.addEventListener("submit", (e)=> {
     console.log(`Age = ${age}`);
     formFour.style.opacity = "0.3";
     errMsg.style.display = "block";
-    }
 });
 
 // insert ai here
