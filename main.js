@@ -44,26 +44,19 @@ formTwo.addEventListener("submit", (e)=> {
 formThree.addEventListener("submit", (e)=> {
     e.preventDefault();
     const time = document.getElementById("time").value;
-    if (time.length = 4 && time.includes(".")) {
-        console.log("3rd question done");
-        console.log(`Age = ${age}`);
-        form.style.opacity = "0.3";
-        formFour.style.display = "block";
-    } else {
-        console.error("Please enter a valid time.");
-    }
+    console.log("3rd question done");
+    console.log(`Age = ${age}`);
+    formThree.style.opacity = "0.3";
+    formFour.style.display = "block";
 });
 
 formFour.addEventListener("submit", (e)=> {
     e.preventDefault();
-    const time = document.getElementById("time").value;
-    if (time.length = 4 && time.includes(".")) {
-        console.log("4th question done");
-        console.log(`Age = ${age}`);
-        form.style.opacity = "0.3";
-        formFour.style.display = "block";
-    } else {
-        console.error("Please enter a valid time.");
+    const time = document.getElementById("time2").value;
+    console.log("4th question done");
+    console.log(`Age = ${age}`);
+    formFour.style.opacity = "0.3";
+    errMsg.style.display = "block";
     }
 });
 
