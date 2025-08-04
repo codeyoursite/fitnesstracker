@@ -15,7 +15,7 @@ form.addEventListener("submit", (e)=> {
     if (age < 100) {
         console.log("1st question done");
         console.log(`Age = ${age}`);
-        form.style.display = "none";
+        form.style.opacity = "0.3";
         formTwo.style.display = "block";
     } else {
         console.error("Please enter an age that is below 100.");
@@ -29,10 +29,10 @@ formTwo.addEventListener("submit", (e)=> {
         console.log("2nd question done");
         if (checked_radio.value === "I don't have one.") {
             console.log(checked_radio.value);
-            formTwo.style.display = "none";
+            formTwo.style.opacity = "0.3";
             errMsg.style.display = "block";
         } else {
-            formTwo.style.display = "none";
+            formTwo.style.opacity = "0.3";
             formThree.style.display = "block";
             console.log("its working");
         }
@@ -47,7 +47,7 @@ formThree.addEventListener("submit", (e)=> {
     if (time.length = 4 && time.includes(".")) {
         console.log("1st question done");
         console.log(`Age = ${age}`);
-        form.style.display = "none";
+        form.style.opacity = "0.3";
         formTwo.style.display = "block";
     } else {
         console.error("Please enter a valid time.");
