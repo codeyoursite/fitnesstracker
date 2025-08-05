@@ -1,3 +1,11 @@
+import express from "express";
+import dotenv from "dotenv";
+import multer from "multer";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import fs from "fs";
+import { GoogleGenAI } from "@google/genai";
+
 const form = document.getElementById("form");
 const formTwo = document.getElementById("formTwo");
 const formThree = document.getElementById("formThree");
@@ -50,14 +58,39 @@ formThree.addEventListener("submit", (e)=> {
     formFour.style.display = "block";
 });
 
-formFour.addEventListener("submit", (e)=> {
-    e.preventDefault();
-    const time = document.getElementById("time2").value;
-    console.log("4th question done");
-    console.log(`Age = ${age}`);
-    formFour.style.opacity = "0.3";
-    errMsg.style.display = "block";
-});
+// formFour.addEventListener("submit", (e)=> {
+//     e.preventDefault();
+//     const time = document.getElementById("time2").value;
+//     console.log("4th question done");
+//     console.log(`Age = ${age}`);
+//     formFour.style.opacity = "0.3";
+//     errMsg.style.display = "block";
+// });
+
+formFour.onsubmit = async event => {
+    event.preventDefault();
+
+    // Read the contents of the form
+    const formData = new FormData(form);
+    
+    try {
+        // Post the form contents to our server
+        const response = await fetch("/askgemini", {
+            method: "POST",
+            body: formData
+        });
+
+        // Receive the server's response and populate the HTML
+        const responseJSON = await response.json();
+        document.getElementById("errMsg").innerText = responseJSON.answer;
+        errMsg.style.display = "block";
+    }
+    catch (error) {
+        console.error("Error: ", error);
+        errMsg.style.display = "block";
+        errMsg.innerText = "Error: " + error;
+    }
+};
 
 const workouts = [
   "6 x 30s hill sprints, jog down recovery",
@@ -81,3 +114,72 @@ const workouts = [
   "3K steady + 1 min sprint finish",
   "Short tempo: 10 min easy + 5 min hard"
 ];
+
+
+
+// Initialise Gemini
+dotenv.config();
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+
+// Initialise the server
+const app = express();
+const upload = multer({ dest: "uploads/" });
+
+
+// Serve the front-end
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+app.get("/", (_, res) => {
+	res.sendFile(__dirname + "/index.html");
+});
+
+
+// Send form submissions to Gemini
+app.post("/askgemini", upload.single("image"), async (req, res) => {
+	try {
+		const filePath = req.file.path;
+		const mimeType = req.file.mimetype;
+
+		const imageBytes = await fs.promises.readFile(filePath);
+
+		// The maximum image size using inline images is 20MB, otherwise use the File API
+		// See https://ai.google.dev/gemini-api/docs/image-understanding
+		const response = await ai.models.generateContent({
+			model: "gemini-2.5-flash",
+			contents: [
+				{
+					inlineData: { 
+						mimeType,
+						data: imageBytes.toString("base64")
+					}
+				},
+				{
+					// Replace with what you want to ask Gemini about the image
+					text: "Caption this image."
+				}
+			]
+		});
+		
+		const answer = response.text;
+		console.log(answer);
+		res.json({ answer });
+
+		// Clean up uploaded file
+		await fs.promises.unlink(filePath);
+	}
+	catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Image upload or Gemini API call failed: " + error.message });
+	}
+});
+
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+	console.log(`Server started on port ${PORT}`);
+});
