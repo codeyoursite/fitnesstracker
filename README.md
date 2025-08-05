@@ -1,8 +1,8 @@
-# gemini-starter
+# I forked gemini-starter
 
-Basic starter for uploading images to the Gemini API. Built initially for team *Pancakes* at the 2025 Prewired Summer Make-a-Thon.
+Basic starter for uploading images to the Gemini API. Built a tiny bit initially for team *Pancakes* at the 2025 Prewired Summer Make-a-Thon -  the winners btw. And you can see why!
 
-## How to use
+## How to use - done
 
 1. Clone repository
 2. Run `npm i` to install dependencies
@@ -12,7 +12,7 @@ Basic starter for uploading images to the Gemini API. Built initially for team *
 6. Run the server with `npm start` and navigate to `localhost:3000` (or your custom port)
 7. Hack away!
 
-## Understanding the dependencies
+## Understanding the dependencies - got it
 
 * `@google/genai` - Google's library for connecting to Gemini
 * `dotenv` - Allows for handling .env files for keeping your API key secret
