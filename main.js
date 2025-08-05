@@ -59,4 +59,27 @@ formFour.addEventListener("submit", (e)=> {
     errMsg.style.display = "block";
 });
 
+const workouts = [
+  "6 x 30s hill sprints, jog down recovery",
+  "8 x 45s hill sprints, jog down recovery",
+  "12 x 60s hill sprints, jog down recovery",
+  "6 x 1 min fast / 1 min walk",
+  "5 x 2 min fast / 1 min jog",
+  "6 x 3 min @ 5K pace / 90s jog",
+  "Pyramid: 1-2-3-2-1 min hard, equal jog recovery",
+  "4 x 400m @ 5K pace, 200m jog",
+  "6 x 400m @ 5K pace, 200m jog",
+  "8 x 400m @ 3K pace, 200m jog",
+  "Fartlek: 1-2-3-2-1 min hard, 1 min jog",
+  "Fartlek: random pace shifts on timer beeps",
+  "2 x 5 min tempo with 2 min jog",
+  "3 x 6 min tempo with 90s jog",
+  "4 x 7 min tempo with 90s jog",
+  "Progression run: 20 min, last 5 min hard",
+  "3 x 6 min threshold pace, 1 min rest",
+  "3–5 loops of 800m terrain: uphill push, downhill control, steady loop",
+  "3K steady + 1 min sprint finish",
+  "Short tempo: 10 min easy + 5 min hard"
+];
+
 // insert ai here
