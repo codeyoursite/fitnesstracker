@@ -81,5 +81,3 @@ const workouts = [
   "3K steady + 1 min sprint finish",
   "Short tempo: 10 min easy + 5 min hard"
 ];
-
-// insert ai here
