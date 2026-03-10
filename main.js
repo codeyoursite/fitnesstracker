@@ -1,185 +1,92 @@
-import express from "express";
-import dotenv from "dotenv";
-import multer from "multer";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
-import fs from "fs";
-import { GoogleGenAI } from "@google/genai";
-
+// --- FRONTEND LOGIC ---
 const form = document.getElementById("form");
 const formTwo = document.getElementById("formTwo");
 const formThree = document.getElementById("formThree");
 const formFour = document.getElementById("formFour");
 const errMsg = document.getElementById("errMsg");
-form.style.display = "block";
-formTwo.style.display = "none";
-formThree.style.display = "none";
-formFour.style.display = "none";
-errMsg.style.display = "none"
 
-form.addEventListener("submit", (e)=> {
+// Store data in a higher scope so all forms can access it
+let userData = {};
+
+form.addEventListener("submit", (e) => {
     e.preventDefault();
     const age = document.getElementById("age").value;
     if (age < 100) {
-        console.log("1st question done");
-        console.log(`Age = ${age}`);
+        userData.age = age;
         form.style.opacity = "0.3";
         formTwo.style.display = "block";
     } else {
-        console.error("Please enter an age that is below 100.");
+        alert("Please enter an age below 100.");
     }
 });
 
-formTwo.addEventListener("submit", (e)=> {
+formTwo.addEventListener("submit", (e) => {
     e.preventDefault();
-    const checked_radio = document.querySelector('input[name = "yesno"]:checked');
-    if (checked_radio != null) {
-        console.log("2nd question done");
-        if (checked_radio.value === "I don't have one.") {
-            console.log(checked_radio.value);
-            formTwo.style.opacity = "0.3";
-            errMsg.style.display = "block";
-        } else {
-            formTwo.style.opacity = "0.3";
-            formThree.style.display = "block";
-            console.log("its working");
-        }
+    const checked_radio = document.querySelector('input[name="yesno"]:checked');
+    if (checked_radio) {
+        userData.hasExperience = checked_radio.value;
+        formTwo.style.opacity = "0.3";
+        formThree.style.display = "block";
     } else {
         alert('Nothing checked');
     }
 });
 
-formThree.addEventListener("submit", (e)=> {
+formThree.addEventListener("submit", (e) => {
     e.preventDefault();
-    const time = document.getElementById("time").value;
-    console.log("3rd question done");
-    console.log(`Age = ${age}`);
+    userData.time = document.getElementById("time").value;
     formThree.style.opacity = "0.3";
     formFour.style.display = "block";
 });
 
-// formFour.addEventListener("submit", (e)=> {
-//     e.preventDefault();
-//     const time = document.getElementById("time2").value;
-//     console.log("4th question done");
-//     console.log(`Age = ${age}`);
-//     formFour.style.opacity = "0.3";
-//     errMsg.style.display = "block";
-// });
+formFour.onsubmit = async (e) => {
+    e.preventDefault();
+    userData.goal = document.getElementById("time2")?.value || "General Fitness";
 
-formFour.onsubmit = async event => {
-    event.preventDefault();
-
-    // Read the contents of the form
-    const formData = new FormData(form);
-    
     try {
-        // Post the form contents to our server
         const response = await fetch("/askgemini", {
             method: "POST",
-            body: formData
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(userData)
         });
 
-        // Receive the server's response and populate the HTML
         const responseJSON = await response.json();
-        document.getElementById("errMsg").innerText = responseJSON.answer;
+        errMsg.innerText = responseJSON.answer;
         errMsg.style.display = "block";
-    }
-    catch (error) {
-        console.error("Error: ", error);
-        errMsg.style.display = "block";
+    } catch (error) {
         errMsg.innerText = "Error: " + error;
+        errMsg.style.display = "block";
     }
 };
 
-const workouts = [
-  "6 x 30s hill sprints, jog down recovery",
-  "8 x 45s hill sprints, jog down recovery",
-  "12 x 60s hill sprints, jog down recovery",
-  "6 x 1 min fast / 1 min walk",
-  "5 x 2 min fast / 1 min jog",
-  "6 x 3 min @ 5K pace / 90s jog",
-  "Pyramid: 1-2-3-2-1 min hard, equal jog recovery",
-  "4 x 400m @ 5K pace, 200m jog",
-  "6 x 400m @ 5K pace, 200m jog",
-  "8 x 400m @ 3K pace, 200m jog",
-  "Fartlek: 1-2-3-2-1 min hard, 1 min jog",
-  "Fartlek: random pace shifts on timer beeps",
-  "2 x 5 min tempo with 2 min jog",
-  "3 x 6 min tempo with 90s jog",
-  "4 x 7 min tempo with 90s jog",
-  "Progression run: 20 min, last 5 min hard",
-  "3 x 6 min threshold pace, 1 min rest",
-  "3–5 loops of 800m terrain: uphill push, downhill control, steady loop",
-  "3K steady + 1 min sprint finish",
-  "Short tempo: 10 min easy + 5 min hard"
-];
+// --- BACKEND LOGIC (Node.js/Express) ---
+import express from "express";
+import dotenv from "dotenv";
+import { GoogleGenerativeAI } from "@google/generative-ai"; // Updated import name
 
-
-
-// Initialise Gemini
 dotenv.config();
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-
-// Initialise the server
 const app = express();
-const upload = multer({ dest: "uploads/" });
+app.use(express.json()); // Essential for reading JSON bodies
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// Serve the front-end
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+app.post("/askgemini", async (req, res) => {
+    try {
+        const { age, hasExperience, time, goal } = req.body;
+        
+        const prompt = `User Profile: Age ${age}, Experience: ${hasExperience}, Available Time: ${time}, Goal: ${goal}. Please provide a personalized workout suggestion.`;
 
-app.get("/", (_, res) => {
-	res.sendFile(__dirname + "/index.html");
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        
+        res.json({ answer: text });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Gemini API call failed" });
+    }
 });
 
-
-// Send form submissions to Gemini
-app.post("/askgemini", upload.single("image"), async (req, res) => {
-	try {
-		const filePath = req.file.path;
-		const mimeType = req.file.mimetype;
-
-		const imageBytes = await fs.promises.readFile(filePath);
-
-		// The maximum image size using inline images is 20MB, otherwise use the File API
-		// See https://ai.google.dev/gemini-api/docs/image-understanding
-		const response = await ai.models.generateContent({
-			model: "gemini-2.5-flash",
-			contents: [
-				{
-					inlineData: { 
-						mimeType,
-						data: imageBytes.toString("base64")
-					}
-				},
-				{
-					// Replace with what you want to ask Gemini about the image
-					text: "Caption this image."
-				}
-			]
-		});
-		
-		const answer = response.text;
-		console.log(answer);
-		res.json({ answer });
-
-		// Clean up uploaded file
-		await fs.promises.unlink(filePath);
-	}
-	catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Image upload or Gemini API call failed: " + error.message });
-	}
-});
-
-
-// Start the server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-	console.log(`Server started on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
